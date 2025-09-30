@@ -1,3 +1,5 @@
+# scraper.py
+# A simple scraper to fetch Reliance stock price and save it to a CSV
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
