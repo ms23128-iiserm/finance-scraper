@@ -18,7 +18,7 @@ def scrape_news_data(api_key):
     print("Scraping news headlines...")
     
     # Check if the API key has been provided to avoid errors
-    if not api_key or api_key == '77ba15ef8c8c498c9753b58a4804dd85':
+    if not api_key or api_key == 'YOUR_NEWS_API_KEY':
         print("❌ ERROR: News API Key is missing. Cannot fetch news.")
         return pd.DataFrame() # Return an empty DataFrame
 
@@ -59,7 +59,7 @@ def scrape_news_data(api_key):
 if __name__ == '__main__':
     # --- Configuration for the Test ---
     # IMPORTANT: Paste your real News API Key here to run the test
-    TEST_NEWS_API_KEY = 'YOUR_NEWS_API_KEY'
+    TEST_NEWS_API_KEY = ''
     
     print("--- Running Test for News Scraper ---")
     
