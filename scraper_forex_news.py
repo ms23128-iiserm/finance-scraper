@@ -43,7 +43,7 @@ def get_currency_rates():
         return None, None
 
 # --- Main Run ---
-if _name_ == "_main_":
+if __name__ == "_main_":
     print("Fetching latest data...\n")
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
