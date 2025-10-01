@@ -59,7 +59,7 @@ def scrape_news_data(api_key):
 if __name__ == '__main__':
     # --- Configuration for the Test ---
     # IMPORTANT: Paste your real News API Key here to run the test
-    TEST_NEWS_API_KEY = ''
+    TEST_NEWS_API_KEY = '77ba15ef8c8c498c9753b58a4804dd85'
     
     print("--- Running Test for News Scraper ---")
     
