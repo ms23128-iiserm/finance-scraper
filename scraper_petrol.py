@@ -48,4 +48,5 @@ if __name__ == '__main__':
         print(petrol_df.head())
         print("\n--- Sample of Scraped Petrol Data (Most Recent) ---")
         print(petrol_df.tail())
+        print("\nTest finished successfully! 🚀")
     
