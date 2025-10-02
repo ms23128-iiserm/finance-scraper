@@ -30,4 +30,22 @@ def scrape_petrol_data(start_date, end_date):
     except Exception as e:
         print(f"❌ An error occurred while scraping data: {e}")
         return pd.DataFrame()
+    # This block allows you to test this script directly
+if __name__ == '__main__':
+    # Define the 5-year date range for the test
+    end_date = datetime.date.today()
+    start_date = end_date - datetime.timedelta(days=1825)
+    
+    print("--- Running Test for scraper_petrol.py ---")
+    print(f"Fetching data from {start_date} to {end_date}")
+    
+    # Call your function to get the data
+    petrol_df = scrape_petrol_data(start_date, end_date)
+    
+    # If data was fetched, print samples to the screen
+    if not petrol_df.empty:
+        print("\n--- Sample of Scraped Petrol Data (Oldest) ---")
+        print(petrol_df.head())
+        print("\n--- Sample of Scraped Petrol Data (Most Recent) ---")
+        print(petrol_df.tail())
     
