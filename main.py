@@ -5,7 +5,9 @@ import sqlite3
 # --- CONFIGURATION PARAMETERS ---
 # Define the date range for your time-series scrapers
 TODAY = datetime.now().strftime('%Y-%m-%d')
-SEVEN_DAYS_AGO = (datetime.now() - pd.Timedelta(days=7)).strftime('%Y-%m-%d')
+
+# The calculation uses 5 * 365 days as a simple approximation for 5 years.
+START_DATE = (datetime.now() - pd.Timedelta(days=5 * 365)).strftime('%Y-%m-%d') 
 
 # >> ACTION REQUIRED: REPLACE 'PLACEHOLDER' WITH YOUR ACTUAL KEY <<
 NEWS_API_KEY = "eab586f731354326a3c2b38a2833be78" 
@@ -74,7 +76,8 @@ def run_data_pipeline():
     # RELIANCE
     try:
         print("1/5. Scraping Reliance Stock...")
-        data = scrape_reliance_data(start_date=SEVEN_DAYS_AGO, end_date=TODAY)
+        # *** MODIFICATION 2: Using the new START_DATE variable ***
+        data = scrape_reliance_data(start_date=START_DATE, end_date=TODAY)
         all_scraped_data['reliance'] = standardize_data_format(data)
         print(f"  [SUCCESS] Collected {len(all_scraped_data['reliance'])} Reliance records.")
     except Exception as e:
@@ -84,7 +87,8 @@ def run_data_pipeline():
     # GOLD
     try:
         print("2/5. Scraping Gold...")
-        data = scrape_gold_data(start_date=SEVEN_DAYS_AGO, end_date=TODAY)
+        # *** MODIFICATION 2: Using the new START_DATE variable ***
+        data = scrape_gold_data(start_date=START_DATE, end_date=TODAY)
         all_scraped_data['gold'] = standardize_data_format(data)
         print(f"  [SUCCESS] Collected {len(all_scraped_data['gold'])} Gold records.")
     except Exception as e:
@@ -94,7 +98,8 @@ def run_data_pipeline():
     # PETROL
     try:
         print("3/5. Scraping Petrol...")
-        data = scrape_petrol_data(start_date=SEVEN_DAYS_AGO, end_date=TODAY)
+        # *** MODIFICATION 2: Using the new START_DATE variable ***
+        data = scrape_petrol_data(start_date=START_DATE, end_date=TODAY)
         all_scraped_data['petrol'] = standardize_data_format(data)
         print(f"  [SUCCESS] Collected {len(all_scraped_data['petrol'])} Petrol records.")
     except Exception as e:
@@ -104,14 +109,15 @@ def run_data_pipeline():
     # FOREX
     try:
         print("4/5. Scraping Forex...")
-        data = scrape_forex(start_date=SEVEN_DAYS_AGO, end_date=TODAY)
+        # *** MODIFICATION 2: Using the new START_DATE variable ***
+        data = scrape_forex(start_date=START_DATE, end_date=TODAY)
         all_scraped_data['forex'] = standardize_data_format(data)
         print(f"  [SUCCESS] Collected {len(all_scraped_data['forex'])} Forex records.")
     except Exception as e:
         print(f"  [ERROR] Forex scraping failed: {e}")
         all_scraped_data['forex'] = []
         
-    # NEWS
+    # NEWS (No change here, as news usually only fetches recent articles)
     try:
         print("5/5. Scraping Latest News...")
         data = scrape_news_data(api_key=NEWS_API_KEY)
