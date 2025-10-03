@@ -1,35 +1,45 @@
+# File: scraper_forex_nocsv.py
 import yfinance as yf
 import pandas as pd
 import datetime
 
+def scrape_forex(ticker: str, years: int = 5):
+    """
+    Scrape historical forex data for a given ticker over the last `years` years
+    and return it as a pandas DataFrame (no CSV saved).
+    
+    Args:
+        ticker (str): Forex ticker symbol (e.g., "INR=X" for USD/INR).
+        years (int): Number of years of historical data to fetch (default=5).
+    
+    Returns:
+        pd.DataFrame: The historical adjusted close prices.
+    """
+    end = datetime.date.today()
+    start = end - datetime.timedelta(days=years*365)
+    
+    print(f"Fetching data for {ticker} from {start} to {end}...")
+    
+    data = yf.download(ticker, start=start, end=end, interval="1d", auto_adjust=False)
+    
+    # Use 'Adj Close' if available, otherwise fallback to 'Close'
+    if 'Adj Close' in data.columns:
+        df = data['Adj Close']
+    else:
+        df = data['Close']
+    
+    print(f"Data fetched for {ticker}, {len(df)} rows.")
+    return df
+
 # -----------------------------
-# Forex data using yfinance
+# Example Usage
 # -----------------------------
-
-# Define tickers (Yahoo Finance symbols for forex pairs)
-# INR=X means USD/INR, EURUSD=X means EUR/USD
-tickers = ["INR=X", "EURUSD=X"]
-
-# Fetch last 5 years of daily data
-end = datetime.date.today()
-start = end - datetime.timedelta(days=5*365)
-
-# Use Close prices (forex does not have 'Adj Close')
-data = yf.download(tickers, start=start, end=end, interval="1d")['Close']
-
-# Rename columns for clarity
-data = data.rename(columns={
-    "INR=X": "USD_INR",
-    "EURUSD=X": "EUR_USD"
-})
-
-# Reset index to have 'date' as a column
-df_currency = data.reset_index()
-
-# Create new column: EUR to INR
-df_currency["EUR_INR"] = df_currency["EUR_USD"] * df_currency["USD_INR"]
-
-# Display first 10 rows
-print(df_currency.head(1297))
-print(f"Total rows: {len(df_currency)}")
+if __name__ == "__main__":
+    tickers = ["INR=X", "EURINR=X"]  # USD/INR and EUR/INR
+    
+    usd_inr = scrape_forex("INR=X", years=5)
+    eur_inr = scrape_forex("EURINR=X", years=5)
+    
+    print(usd_inr.head())
+    print(eur_inr.head())
 
