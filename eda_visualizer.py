@@ -57,4 +57,36 @@ def perform_financial_eda():
     print("✅ All financial data merged successfully.")
     print("\n--- Sample of Merged Data ---")
     print(df.head())
+
+    # --- 3. Generate Visualizations ---
+    print("\n📈 Generating plots... (Close plot windows to see the next one)")
+
+    # Plot 1: Time-Series of Reliance Stock Price
+    plt.figure(figsize=(14, 7))
+    df['reliance_price'].plot()
+    plt.title('Reliance Stock Price (Last 5 Years)')
+    plt.xlabel('Date')
+    plt.ylabel('Price (INR)')
+    plt.grid(True)
+    plt.show()
+
+    # Plot 2: Histograms of All Features
+    df.hist(bins=30, figsize=(15, 10))
+    plt.suptitle('Histograms of Feature Distributions')
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.show()
+
+    # Plot 3: Correlation Heatmap
+    plt.figure(figsize=(10, 8))
+    correlation_matrix = df.corr()
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f')
+    plt.title('Correlation Matrix (Stocks, Gold, Petrol, Forex)')
+    plt.show()
+    
+    print("\n--- ✅ EDA Complete ---")
+
+if __name__ == '__main__':
+    # You may need to install these libraries
+    # pip install matplotlib seaborn
+    perform_financial_eda()
     
