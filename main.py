@@ -24,6 +24,9 @@ from scraper_forex import scrape_forex
 from scraper_news import scrape_news_data
 
 
+# PASTED THIS corrected function into
+#  main.py
+
 def standardize_data_format(data):
     """
     Converts data from Pandas DataFrame/Series to a list of dictionaries, 
@@ -31,10 +34,11 @@ def standardize_data_format(data):
     data might already be a list or None.
     """
     if isinstance(data, pd.DataFrame):
-        # Reset index if it's named (like 'Date' from yfinance) and convert to list of dicts
-        if data.index.name:
-            return data.reset_index().to_dict('records')
-        return data.to_dict('records')
+        # --- THIS IS THE FIX ---
+        # We always reset the index, forcing the 'Date' (or 'index') 
+        # column to be saved.
+        return data.reset_index().to_dict('records')
+    
     elif isinstance(data, pd.Series):
         # Convert Series to a list of dictionaries
         return data.to_frame().reset_index().to_dict('records')
