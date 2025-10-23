@@ -1,5 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine
+import matplotlib  # <-- NEW: Import matplotlib base
+matplotlib.use('TkAgg')  # <-- NEW: Set the backend BEFORE importing pyplot
 import matplotlib.pyplot as plt
 import seaborn as sns
 import sqlite3
@@ -16,14 +18,10 @@ def perform_financial_eda():
 
     # --- 1. Load and Prepare Data ---
     try:
-        # Create the connection engine for pandas
         engine = create_engine(f'sqlite:///{DATABASE_FILE}')
-        
         print(f"Connecting to database: {DATABASE_FILE}")
 
-        # Load each table and select only the 'Close' price, renaming it.
-        # We set 'Date' as the index to make merging easy.
-        
+        # Load each table, select only Date and Close, and set Date as index
         reliance_df = pd.read_sql('SELECT "Date", "Close" FROM reliance_stocks', engine, parse_dates=['Date'])
         reliance_df.rename(columns={'Close': 'reliance_price'}, inplace=True)
         reliance_df.set_index('Date', inplace=True)
@@ -46,13 +44,13 @@ def perform_financial_eda():
         print(f"❌ ERROR: Could not read data. Check your table names (e.g., 'reliance_stocks').")
         print(f"Details: {e}")
         return
- # --- 2. Merge Data ---
-    # Combine all DataFrames side-by-side using their common 'Date' index
+
+    # --- 2. Merge Data ---
     df = pd.concat([reliance_df, gold_df, petrol_df, forex_df], axis=1)
-    
-    # Handle missing values (e.g., market holidays) by filling with the last known price
+    # Fill missing values (e.g., weekends) with the last known price
     df.fillna(method='ffill', inplace=True)
-    df.dropna(inplace=True) # Drop any remaining empty rows (from the start)
+    # Drop any remaining rows that couldn't be filled (usually at the start)
+    df.dropna(inplace=True) 
 
     print("✅ All financial data merged successfully.")
     print("\n--- Sample of Merged Data ---")
@@ -62,31 +60,45 @@ def perform_financial_eda():
     print("\n📈 Generating plots... (Close plot windows to see the next one)")
 
     # Plot 1: Time-Series of Reliance Stock Price
-    plt.figure(figsize=(14, 7))
-    df['reliance_price'].plot()
-    plt.title('Reliance Stock Price (Last 5 Years)')
-    plt.xlabel('Date')
-    plt.ylabel('Price (INR)')
-    plt.grid(True)
-    plt.show()
+    try:
+        plt.figure(figsize=(14, 7))
+        df['reliance_price'].plot()
+        plt.title('Reliance Stock Price (Last 5 Years)')
+        plt.xlabel('Date')
+        plt.ylabel('Price (INR)')
+        plt.grid(True)
+        plt.savefig('reliance_price_plot.png') # <-- FALLBACK: Save plot as file
+        print("  - reliance_price_plot.png (saved)")
+        plt.show()
+    except Exception as e:
+        print(f"  - Error creating time-series plot: {e}")
 
     # Plot 2: Histograms of All Features
-    df.hist(bins=30, figsize=(15, 10))
-    plt.suptitle('Histograms of Feature Distributions')
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    plt.show()
+    try:
+        df.hist(bins=30, figsize=(15, 10))
+        plt.suptitle('Histograms of Feature Distributions')
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plt.savefig('histograms_plot.png') # <-- FALLBACK: Save plot as file
+        print("  - histograms_plot.png (saved)")
+        plt.show()
+    except Exception as e:
+        print(f"  - Error creating histograms: {e}")
 
     # Plot 3: Correlation Heatmap
-    plt.figure(figsize=(10, 8))
-    correlation_matrix = df.corr()
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f')
-    plt.title('Correlation Matrix (Stocks, Gold, Petrol, Forex)')
-    plt.show()
+    try:
+        plt.figure(figsize=(10, 8))
+        correlation_matrix = df.corr()
+        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f')
+        plt.title('Correlation Matrix (Stocks, Gold, Petrol, Forex)')
+        plt.savefig('correlation_heatmap.png') # <-- FALLBACK: Save plot as file
+        print("  - correlation_heatmap.png (saved)")
+        plt.show()
+    except Exception as e:
+        print(f"  - Error creating heatmap: {e}")
     
     print("\n--- ✅ EDA Complete ---")
+    print("Plots have been shown and/or saved as .png files in your folder.")
 
 if __name__ == '__main__':
-    # You may need to install these libraries
-    # pip install matplotlib seaborn
     perform_financial_eda()
-    
+
