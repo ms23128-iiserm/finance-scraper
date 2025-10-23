@@ -46,5 +46,15 @@ def perform_financial_eda():
         print(f"❌ ERROR: Could not read data. Check your table names (e.g., 'reliance_stocks').")
         print(f"Details: {e}")
         return
+ # --- 2. Merge Data ---
+    # Combine all DataFrames side-by-side using their common 'Date' index
+    df = pd.concat([reliance_df, gold_df, petrol_df, forex_df], axis=1)
+    
+    # Handle missing values (e.g., market holidays) by filling with the last known price
+    df.fillna(method='ffill', inplace=True)
+    df.dropna(inplace=True) # Drop any remaining empty rows (from the start)
 
+    print("✅ All financial data merged successfully.")
+    print("\n--- Sample of Merged Data ---")
+    print(df.head())
     
