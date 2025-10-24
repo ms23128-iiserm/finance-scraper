@@ -138,5 +138,26 @@ def run_feature_analysis(df, target_col='target'):
     if df.empty or target_col not in df.columns:
         print("❌ Cannot run analysis, DataFrame is empty or target column is missing.")
         return
+     # Calculate correlations
+    corr_matrix = df.corr()
+    
+    # Get correlations with the target variable
+    corr_with_target = corr_matrix[target_col].abs().sort_values(ascending=False)
+    
+    print("--- Top 15 Most Predictive Features (Correlation with Target) ---")
+    print(corr_with_target.head(15).to_string())
+    
+    # Save a heatmap of the most important correlations
+    try:
+        top_features = corr_with_target.head(15).index
+        plt.figure(figsize=(12, 10))
+        sns.heatmap(df[top_features].corr(), annot=True, cmap='viridis', fmt='.2f')
+        plt.title('Correlation Heatmap of Top 15 Features')
+        plt.tight_layout()
+        heatmap_file = 'correlation_heatmap.png'
+        plt.savefig(heatmap_file)
+        print(f"\n✅ Correlation heatmap saved to '{heatmap_file}'")
+    except Exception as e:
+        print(f"\n⚠ Warning: Could not save heatmap image: {e}")
 if __name__ == "__main__":
-    main()
+    main()
