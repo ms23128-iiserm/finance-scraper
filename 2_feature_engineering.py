@@ -4,9 +4,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # --- Configuration ---
-INPUT_FILE = 'data_cleaned.csv'     # The file we just created
-OUTPUT_FILE = 'features_engineered_data.csv' # The file this script will create
-TARGET_VARIABLE = 'Reliance_Close'  # The column we want to predict
+INPUT_FILE = 'data_cleaned.csv' 
+OUTPUT_FILE = 'features_engineered_data.csv'
+TARGET_VARIABLE = 'Reliance_Close' 
 # ---------------------
 
 def load_data(filepath):
@@ -14,9 +14,8 @@ def load_data(filepath):
     print(f"--- Loading data from '{filepath}' ---")
     try:
         df = pd.read_csv(filepath, parse_dates=True, index_col=0)
-        df = df.asfreq('D') # Ensure we have a daily frequency for lags
+        df = df.asfreq('D') # Ensure daily frequency
         
-        # After asfreq, some new NaNs might be created if days were missing
         # We re-apply ffill and bfill to ensure no gaps at all
         df = df.ffill().bfill() 
         
@@ -24,20 +23,18 @@ def load_data(filepath):
         return df
     except FileNotFoundError:
         print(f"❌ ERROR: File not found: '{filepath}'")
-        print("Please make sure you have successfully run '1b_data_cleaning.py' first.")
+        print("Please make sure you have successfully run '2_data_clean_merge.py' first.")
         return None
 
 def create_target_variable(df, target_col):
     """
-    Creates the 'target' column.
-    The target is the next day's closing price.
+    Creates the 'target' column (next day's closing price).
     """
     print(f"--- Engineering Target Variable ('{target_col}') ---")
-    # Shift the target column up by one day.
     # df['target'] for today will be df[target_col] for tomorrow.
     df['target'] = df[target_col].shift(-1)
     
-    # We must drop the very last row, as it has no target (we can't know tomorrow's price)
+    # Drop the very last row, as it has no target
     df = df.iloc[:-1]
     print("✅ 'target' column created (tomorrow's price).")
     return df
@@ -45,7 +42,6 @@ def create_target_variable(df, target_col):
 def create_lag_features(df, columns, lags=[1, 3, 7, 14]):
     """
     Creates 'lag' features (e.g., price from 1 day ago, 7 days ago).
-    This is the most important feature for time-series models.
     """
     print(f"--- Engineering Lag Features (Lags: {lags}) ---")
     df_lags = df.copy()
@@ -54,8 +50,7 @@ def create_lag_features(df, columns, lags=[1, 3, 7, 14]):
             col_name = f'{col}lag{lag}'
             df_lags[col_name] = df_lags[col].shift(lag)
     
-    # Lag features create NaNs at the start of the dataset
-    # We drop these rows as they can't be used for training
+    # Lag features create NaNs at the start of the dataset, drop them
     original_rows = len(df_lags)
     df_lags = df_lags.dropna()
     print(f"✅ Lag features created. Dropped {original_rows - len(df_lags)} rows with initial NaN values.")
@@ -82,7 +77,48 @@ def create_rolling_features(df, columns, windows=[7, 30]):
     df_roll = df_roll.dropna()
     print(f"✅ Rolling features created. Dropped {original_rows - len(df_roll)} rows with initial NaN values.")
     return df_roll
+def create_technical_indicators(df, price_col='Reliance_Close'):
+    """
+    Calculates common technical analysis indicators:
+    RSI, MACD, and Bollinger Bands (BB).
+    """
+    print("--- Engineering Advanced Technical Indicators ---")
+    df_tech = df.copy()
 
+    # --- 1. Relative Strength Index (RSI) ---
+    window = 14
+    delta = df_tech[price_col].diff()
+    gain = delta.where(delta > 0, 0)
+    loss = -delta.where(delta < 0, 0)
+    avg_gain = gain.ewm(com=window - 1, min_periods=window).mean()
+    avg_loss = loss.ewm(com=window - 1, min_periods=window).mean()
+    
+    # Handle division by zero for initial calculation if avg_loss is 0
+    rs = avg_gain / avg_loss.replace(0, np.nan) 
+    df_tech['RSI'] = 100 - (100 / (1 + rs))
+
+    # --- 2. Moving Average Convergence Divergence (MACD) ---
+    ema_fast = df_tech[price_col].ewm(span=12, adjust=False).mean()
+    ema_slow = df_tech[price_col].ewm(span=26, adjust=False).mean()
+    
+    df_tech['MACD'] = ema_fast - ema_slow
+    df_tech['MACD_Signal'] = df_tech['MACD'].ewm(span=9, adjust=False).mean()
+# --- 3. Bollinger Bands (BB) ---
+    window_bb = 20
+    df_tech['BB_SMA'] = df_tech[price_col].rolling(window=window_bb).mean()
+    df_tech['BB_StdDev'] = df_tech[price_col].rolling(window=window_bb).std()
+    
+    df_tech['BB_Upper'] = df_tech['BB_SMA'] + (df_tech['BB_StdDev'] * 2)
+    df_tech['BB_Lower'] = df_tech['BB_SMA'] - (df_tech['BB_StdDev'] * 2)
+
+    # Drop helper columns
+    df_tech = df_tech.drop(columns=['BB_SMA', 'BB_StdDev'])
+    
+    # Drop NaNs created by the moving windows (RSI, MACD, BB)
+    original_rows = len(df_tech)
+    df_tech = df_tech.dropna()
+    print(f"✅ Technical Indicators created. Dropped {original_rows - len(df_tech)} rows (due to {window} & {window_bb} day windows).")
+    return df_tech
 def create_date_features(df):
     """Creates features from the date index (e.g., day of week, month)."""
     print("--- Engineering Date Features ---")
@@ -102,8 +138,7 @@ def run_feature_analysis(df, target_col='target'):
     if df.empty or target_col not in df.columns:
         print("❌ Cannot run analysis, DataFrame is empty or target column is missing.")
         return
-        
-    # Calculate correlations
+     # Calculate correlations
     corr_matrix = df.corr()
     
     # Get correlations with the target variable
@@ -125,6 +160,9 @@ def run_feature_analysis(df, target_col='target'):
     except Exception as e:
         print(f"\n⚠ Warning: Could not save heatmap image: {e}")
 
+# ==============================================================================
+#                               MAIN EXECUTION
+# ==============================================================================
 def main():
     """Main function to run the feature engineering pipeline."""
     
@@ -133,26 +171,29 @@ def main():
         return
 
     # Define which columns to create lag/rolling features for
-    # We include our target variable and all external data
+    # Note: We do NOT include the newly created Technical Indicators here 
+    # as they are based on Reliance_Close itself.
     feature_cols = [
         'Reliance_Close', 'Gold_Price', 'Petrol_Price', 
         'USD_INR_Rate', 'EUR_INR_Rate', 'Sentiment'
     ]
-
-    # Pipeline
+  # --- Feature Engineering Pipeline ---
     df = create_target_variable(df, TARGET_VARIABLE)
     
-    # We create rolling features FIRST, then lag features
-    # This minimizes the number of rows dropped
+    # Rolling features first
     df = create_rolling_features(df, feature_cols)
+    
+    # Lag features second
     df = create_lag_features(df, feature_cols)
     
-    # Date features don't drop rows, so they can run last
+    # Advanced Technical Indicators (will drop more rows due to windows)
+    df = create_technical_indicators(df, 'Reliance_Close')
+    
+    # Date features last (no rows dropped)
     df = create_date_features(df)
     
     # Re-align frequencies just in case
     df = df.asfreq('D').ffill()
-
     # Save the final dataset
     df.to_csv(OUTPUT_FILE)
     print(f"\n✨ --- SUCCESS --- ✨")
@@ -164,3 +205,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
