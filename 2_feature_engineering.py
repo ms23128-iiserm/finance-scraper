@@ -159,5 +159,23 @@ def run_feature_analysis(df, target_col='target'):
         print(f"\n✅ Correlation heatmap saved to '{heatmap_file}'")
     except Exception as e:
         print(f"\n⚠ Warning: Could not save heatmap image: {e}")
+
+# ==============================================================================
+#                               MAIN EXECUTION
+# ==============================================================================
+def main():
+    """Main function to run the feature engineering pipeline."""
+    
+    df = load_data(INPUT_FILE)
+    if df is None:
+        return
+
+    # Define which columns to create lag/rolling features for
+    # Note: We do NOT include the newly created Technical Indicators here 
+    # as they are based on Reliance_Close itself.
+    feature_cols = [
+        'Reliance_Close', 'Gold_Price', 'Petrol_Price', 
+        'USD_INR_Rate', 'EUR_INR_Rate', 'Sentiment'
+    ]
 if __name__ == "__main__":
     main()
