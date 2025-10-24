@@ -55,3 +55,26 @@ def create_lag_features(df, columns, lags=[1, 3, 7, 14]):
     df_lags = df_lags.dropna()
     print(f"✅ Lag features created. Dropped {original_rows - len(df_lags)} rows with initial NaN values.")
     return df_lags
+
+def create_rolling_features(df, columns, windows=[7, 30]):
+    """
+    Creates rolling mean (trend) and rolling std (volatility) features.
+    """
+    print(f"--- Engineering Rolling Features (Windows: {windows}) ---")
+    df_roll = df.copy()
+    for col in columns:
+        for window in windows:
+            # Rolling Mean (Trend)
+            roll_mean_name = f'{col}roll_mean{window}'
+            df_roll[roll_mean_name] = df_roll[col].rolling(window=window).mean()
+            
+            # Rolling Std (Volatility)
+            roll_std_name = f'{col}roll_std{window}'
+            df_roll[roll_std_name] = df_roll[col].rolling(window=window).std()
+
+    # Rolling features also create NaNs at the start
+    original_rows = len(df_roll)
+    df_roll = df_roll.dropna()
+    print(f"✅ Rolling features created. Dropped {original_rows - len(df_roll)} rows with initial NaN values.")
+    return df_roll
+
