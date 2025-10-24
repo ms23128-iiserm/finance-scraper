@@ -20,8 +20,8 @@ def run_adf_test(series):
     
     print('\n--- ADF Test Results ---')
     print(adf_output.to_string())
-
- # Conclusion based on p-value
+    
+    # Conclusion based on p-value
     p_value = result[1]
     
     print('\n--- Conclusion ---')
@@ -34,6 +34,7 @@ def run_adf_test(series):
         print("The time series is likely *NON-STATIONARY*.")
         print("You will need to use *differencing* before applying ARIMA/SARIMA models.")
         return False
+
 def main():
     """Main function to load data and run the stationarity check."""
     
@@ -59,10 +60,11 @@ def main():
             print(f"\n\n--- Checking Stationarity for DIFFERENCED {PRICE_COLUMN} Series (Lag 1) ---")
             differenced_series = price_series.diff().dropna()
             run_adf_test(differenced_series)
+            
+    except FileNotFoundError:
+        print(f"❌ ERROR: File not found: '{INPUT_FILE}'. Please run the feature engineering script first.")
+    except Exception as e:
+        print(f"❌ An unexpected error occurred: {e}")
 
-        except FileNotFoundError:
-          print(f"❌ ERROR: File not found: '{INPUT_FILE}'. Please run the feature engineering script first.")
-        except Exception as e:
-          print(f"❌ An unexpected error occurred: {e}")
-if _name_ == "_main_":
+if __name__== "_main_":
     main()
