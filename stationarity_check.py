@@ -34,3 +34,28 @@ def run_adf_test(series):
         print("The time series is likely *NON-STATIONARY*.")
         print("You will need to use *differencing* before applying ARIMA/SARIMA models.")
         return False
+def main():
+    """Main function to load data and run the stationarity check."""
+    
+    print(f"--- Loading data from '{INPUT_FILE}' for stationarity check ---")
+    try:
+        # Load the feature-engineered data, which has a clean time index
+        df = pd.read_csv(INPUT_FILE, parse_dates=True, index_col=0)
+        
+        if PRICE_COLUMN not in df.columns:
+             print(f"❌ ERROR: Price column '{PRICE_COLUMN}' not found. Check your CSV.")
+             return
+             
+        # Extract the closing price series
+        price_series = df[PRICE_COLUMN].copy()
+        
+        # 1. Run the test on the original series
+        print(f"\n--- Checking Stationarity for ORIGINAL {PRICE_COLUMN} Series ---")
+        is_stationary = run_adf_test(price_series.dropna())
+        
+        if not is_stationary:
+            # 2. If non-stationary, show the effect of differencing
+            # This is the standard fix for non-stationarity
+            print(f"\n\n--- Checking Stationarity for DIFFERENCED {PRICE_COLUMN} Series (Lag 1) ---")
+            differenced_series = price_series.diff().dropna()
+            run_adf_test(differenced_series)
