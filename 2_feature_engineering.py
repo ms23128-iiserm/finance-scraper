@@ -177,5 +177,23 @@ def main():
         'Reliance_Close', 'Gold_Price', 'Petrol_Price', 
         'USD_INR_Rate', 'EUR_INR_Rate', 'Sentiment'
     ]
-if __name__ == "__main__":
-    main()
+  # --- Feature Engineering Pipeline ---
+    df = create_target_variable(df, TARGET_VARIABLE)
+    
+    # Rolling features first
+    df = create_rolling_features(df, feature_cols)
+    
+    # Lag features second
+    df = create_lag_features(df, feature_cols)
+    
+    # Advanced Technical Indicators (will drop more rows due to windows)
+    df = create_technical_indicators(df, 'Reliance_Close')
+    
+    # Date features last (no rows dropped)
+    df = create_date_features(df)
+    
+    # Re-align frequencies just in case
+    df = df.asfreq('D').ffill()
+    if __name__ == "__main__":
+        main()
+
