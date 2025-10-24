@@ -59,3 +59,10 @@ def main():
             print(f"\n\n--- Checking Stationarity for DIFFERENCED {PRICE_COLUMN} Series (Lag 1) ---")
             differenced_series = price_series.diff().dropna()
             run_adf_test(differenced_series)
+
+        except FileNotFoundError:
+          print(f"❌ ERROR: File not found: '{INPUT_FILE}'. Please run the feature engineering script first.")
+        except Exception as e:
+          print(f"❌ An unexpected error occurred: {e}")
+if _name_ == "_main_":
+    main()
