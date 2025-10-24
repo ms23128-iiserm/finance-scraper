@@ -119,4 +119,24 @@ def create_technical_indicators(df, price_col='Reliance_Close'):
     df_tech = df_tech.dropna()
     print(f"✅ Technical Indicators created. Dropped {original_rows - len(df_tech)} rows (due to {window} & {window_bb} day windows).")
     return df_tech
+def create_date_features(df):
+    """Creates features from the date index (e.g., day of week, month)."""
+    print("--- Engineering Date Features ---")
+    df_date = df.copy()
+    df_date['day_of_week'] = df_date.index.dayofweek
+    df_date['day_of_month'] = df_date.index.day
+    df_date['month'] = df_date.index.month
+    df_date['year'] = df_date.index.year
+    print("✅ Date features created.")
+    return df_date
 
+def run_feature_analysis(df, target_col='target'):
+    """
+    Performs a correlation analysis to find the most predictive features.
+    """
+    print("\n--- Running Feature Analysis ---")
+    if df.empty or target_col not in df.columns:
+        print("❌ Cannot run analysis, DataFrame is empty or target column is missing.")
+        return
+if __name__ == "__main__":
+    main()
