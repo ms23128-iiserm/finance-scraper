@@ -30,6 +30,25 @@ def load_data(filepath):
     except FileNotFoundError:
         print(f"❌ ERROR: File not found: '{filepath}'")
         return None
+def prepare_X_Y(df, target_cols):
+    """Separates features (X) and targets (Y)."""
+    # Features are all columns EXCEPT the target columns
+    X = df.drop(columns=target_cols).copy()
+    Y = df[target_cols].copy()
+    
+    # Drop non-predictive/non-numeric columns if any remained
+    X = X.select_dtypes(include=np.number)
+    
+    # Critical: Ensure no NaNs remain after final feature set is chosen
+    initial_len = len(X)
+    combined = pd.concat([X, Y], axis=1).dropna()
+    X = combined[X.columns]
+    Y = combined[Y.columns]
+    if len(X) != initial_len:
+         print(f"⚠ Dropped {initial_len - len(X)} rows due to final NaNs.")
+
+    return X, Y
+
 
 
 
