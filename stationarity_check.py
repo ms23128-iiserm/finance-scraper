@@ -20,3 +20,17 @@ def run_adf_test(series):
     
     print('\n--- ADF Test Results ---')
     print(adf_output.to_string())
+
+ # Conclusion based on p-value
+    p_value = result[1]
+    
+    print('\n--- Conclusion ---')
+    if p_value <= 0.05:
+        print(f"✅ The p-value ({p_value:.4f}) is <= 0.05. *Reject the Null Hypothesis (H0)*.")
+        print("The time series is likely *STATIONARY*.")
+        return True
+    else:
+        print(f"❌ The p-value ({p_value:.4f}) is > 0.05. *Fail to Reject the Null Hypothesis (H0)*.")
+        print("The time series is likely *NON-STATIONARY*.")
+        print("You will need to use *differencing* before applying ARIMA/SARIMA models.")
+        return False
