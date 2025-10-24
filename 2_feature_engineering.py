@@ -162,5 +162,4 @@ def main():
     # Run analysis on the final data
     run_feature_analysis(df)
 
-if _name_ == "_main_":
-    main()
+if __name__ == "_main_":
