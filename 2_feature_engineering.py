@@ -194,6 +194,15 @@ def main():
     
     # Re-align frequencies just in case
     df = df.asfreq('D').ffill()
-    if __name__ == "__main__":
-        main()
+    # Save the final dataset
+    df.to_csv(OUTPUT_FILE)
+    print(f"\n✨ --- SUCCESS --- ✨")
+    print(f"Feature-engineered data saved to: {OUTPUT_FILE}")
+    print(f"Final Shape: {df.shape}")
+
+    # Run analysis on the final data
+    run_feature_analysis(df)
+
+if __name__ == "__main__":
+    main()
 
