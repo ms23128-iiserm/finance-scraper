@@ -77,4 +77,46 @@ def create_rolling_features(df, columns, windows=[7, 30]):
     df_roll = df_roll.dropna()
     print(f"✅ Rolling features created. Dropped {original_rows - len(df_roll)} rows with initial NaN values.")
     return df_roll
+def create_technical_indicators(df, price_col='Reliance_Close'):
+    """
+    Calculates common technical analysis indicators:
+    RSI, MACD, and Bollinger Bands (BB).
+    """
+    print("--- Engineering Advanced Technical Indicators ---")
+    df_tech = df.copy()
+
+    # --- 1. Relative Strength Index (RSI) ---
+    window = 14
+    delta = df_tech[price_col].diff()
+    gain = delta.where(delta > 0, 0)
+    loss = -delta.where(delta < 0, 0)
+    avg_gain = gain.ewm(com=window - 1, min_periods=window).mean()
+    avg_loss = loss.ewm(com=window - 1, min_periods=window).mean()
+    
+    # Handle division by zero for initial calculation if avg_loss is 0
+    rs = avg_gain / avg_loss.replace(0, np.nan) 
+    df_tech['RSI'] = 100 - (100 / (1 + rs))
+
+    # --- 2. Moving Average Convergence Divergence (MACD) ---
+    ema_fast = df_tech[price_col].ewm(span=12, adjust=False).mean()
+    ema_slow = df_tech[price_col].ewm(span=26, adjust=False).mean()
+    
+    df_tech['MACD'] = ema_fast - ema_slow
+    df_tech['MACD_Signal'] = df_tech['MACD'].ewm(span=9, adjust=False).mean()
+# --- 3. Bollinger Bands (BB) ---
+    window_bb = 20
+    df_tech['BB_SMA'] = df_tech[price_col].rolling(window=window_bb).mean()
+    df_tech['BB_StdDev'] = df_tech[price_col].rolling(window=window_bb).std()
+    
+    df_tech['BB_Upper'] = df_tech['BB_SMA'] + (df_tech['BB_StdDev'] * 2)
+    df_tech['BB_Lower'] = df_tech['BB_SMA'] - (df_tech['BB_StdDev'] * 2)
+
+    # Drop helper columns
+    df_tech = df_tech.drop(columns=['BB_SMA', 'BB_StdDev'])
+    
+    # Drop NaNs created by the moving windows (RSI, MACD, BB)
+    original_rows = len(df_tech)
+    df_tech = df_tech.dropna()
+    print(f"✅ Technical Indicators created. Dropped {original_rows - len(df_tech)} rows (due to {window} & {window_bb} day windows).")
+    return df_tech
 
