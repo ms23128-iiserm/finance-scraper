@@ -181,3 +181,76 @@ def evaluate_optimized_xgboost(model, X_test, Y_test):
     
     return Y_test, predicted_price
 
+# ==============================================================================
+# 4. RECURSIVE 15-DAY FORECAST
+# ==============================================================================
+
+def predict_recursive_xgboost(model, initial_data, feature_names, n_days=N_FUTURE_DAYS):
+    """Performs a multi-step, recursive prediction for n_days using the trained XGBoost model."""
+    print(f"\n--- Starting Recursive XGBoost Forecast for {n_days} Days ---")
+    
+    context_size = 30 
+    # Use the last 30 days of the price column for initial context
+    current_features = initial_data.iloc[-context_size:].copy()
+
+    forecast_prices = []
+    last_date = current_features.index[-1]
+    
+    # Identify relevant lag/rolling windows from feature names
+    lags = [int(f.split('lag')[1]) for f in feature_names if 'lag' in f]
+    rolls = [int(f.split('mean')[1]) for f in feature_names if 'mean' in f]
+    
+    for i in range(1, n_days + 1):
+        
+        next_date = last_date + pd.Timedelta(days=i)
+        
+        new_features = pd.Series(index=feature_names, dtype=float)
+        
+        # 1. Populate Time Features
+        new_features['year'] = next_date.year
+        new_features['month'] = next_date.month
+        new_features['day'] = next_date.day
+        
+        # 2. Populate Lagged and Rolling Features (The Recursive Step)
+        history = current_features['Reliance_Close']
+        
+        # Lag 1
+        new_features['Reliance_Closelag1'] = history.iloc[-1]
+        
+        # Other Lags
+        for lag in lags:
+            lag_col = f'Reliance_Closelag{lag}'
+            if lag_col in feature_names and len(history) >= lag:
+                new_features[lag_col] = history.iloc[-lag]
+                
+        # Rolling Means
+        for window in rolls:
+            roll_col = f'Reliance_Closeroll_mean{window}'
+            if roll_col in feature_names:
+                new_features[roll_col] = history.iloc[-window:].mean()
+        
+        # 3. Predict
+        X_predict = pd.DataFrame([new_features], index=[next_date])
+        X_predict = X_predict[feature_names].fillna(method='ffill') 
+        
+        predicted_price = model.predict(X_predict)[0]
+        
+        # 4. Update Context (Recurse)
+        # Create a new row to append to the historical context
+        new_price_row = pd.Series(
+            [predicted_price], 
+            index=[next_date], 
+            name='Reliance_Close'
+        ).to_frame(name='Reliance_Close')
+        
+        current_features = pd.concat([current_features, new_price_row])
+        
+        forecast_prices.append((next_date, predicted_price))
+
+    forecast_series = pd.Series([p for d, p in forecast_prices], 
+                                index=[d for d, p in forecast_prices],
+                                name='Predicted Price (15-Day Recursive)')
+    
+    print("✅ Recursive Forecast Complete.")
+    return forecast_series
+
