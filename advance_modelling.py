@@ -210,3 +210,25 @@ def evaluate_optimized_xgboost(model, X_test, Y_test):
     
     return Y_test, pd.Series(predicted_price, index=Y_test.index)
 
+# ==============================================================================
+# 4. DATA CONSOLIDATION AND PLOTTING
+# ==============================================================================
+
+def save_advanced_model_results(Y_test_full, results_list):
+    """
+    Consolidates all model predictions and the actual target into a single
+    DataFrame and saves it as advanced_model_results.csv.
+    """
+    print("\n--- Saving Consolidated Advanced Model Results ---")
+    
+    final_df = pd.DataFrame({TARGET_PRICE: Y_test_full})
+    
+    for actual_series, prediction_series, label in results_list:
+        column_name = f'Predicted_{label}'
+        
+        final_df[column_name] = np.nan
+        final_df.loc[prediction_series.index, column_name] = prediction_series.values
+        
+    final_df.to_csv(ADVANCED_RESULTS_FILE)
+    print(f"✅ All predictions consolidated and saved to '{ADVANCED_RESULTS_FILE}' for final summary.")
+    
