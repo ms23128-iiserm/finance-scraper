@@ -49,6 +49,44 @@ def prepare_X_Y(df, target_cols):
 
     return X, Y
 
+def walk_forward_validation(X, Y):
+    """
+    Performs Walk-Forward Validation (WFV) using XGBoost models.
+    The model is retrained periodically on a rolling window.
+    """
+    print(f"\n--- Starting Walk-Forward Validation (Train Window: {TRAIN_WINDOW_SIZE} days) ---")
+
+    # The test set starts after the initial training window
+    test_start_index = TRAIN_WINDOW_SIZE
+    
+    # Lists to store WFV results
+    price_predictions = []
+    direction_predictions = []
+    actual_values = []
+    
+    # Loop over the test set, making one-step prediction each time
+    for i in tqdm(range(test_start_index, len(X)), desc="WFV Progress"):
+        
+        # 1. Define the current training and testing windows
+        X_train, Y_train = X.iloc[:i], Y.iloc[:i]
+        X_test, Y_test = X.iloc[i:i+1], Y.iloc[i:i+1] # Test window is always the next single day
+        # 2. Regression Model (Price Prediction)
+        reg_model = XGBRegressor(
+            objective='reg:squarederror', 
+            n_estimators=100, 
+            learning_rate=0.1, 
+            max_depth=5,
+            random_state=42, 
+            n_jobs=-1
+        )
+        reg_model.fit(X_train, Y_train[TARGET_PRICE])
+        price_pred = reg_model.predict(X_test)[0]
+        price_predictions.append(price_pred)
+
+
+        
+
+
 
 
 
