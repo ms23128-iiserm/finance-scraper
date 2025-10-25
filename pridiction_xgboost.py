@@ -279,3 +279,14 @@ def plot_results(results_list, title="Comparative Model Forecasting"):
     
     for actual, prediction, label in results_list:
         plt.plot(prediction.index, prediction.values, label=f'Predicted Price ({label})', linestyle='--', alpha=0.7)
+    
+    plt.title(title)
+    plt.xlabel('Date')
+    plt.ylabel('Closing Price (INR)')
+    plt.legend(loc='best')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig('comparative_model_forecast.png')
+    print("✅ Comparative model forecast plot saved to 'comparative_model_forecast.png'")
+
+
