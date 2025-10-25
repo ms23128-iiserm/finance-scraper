@@ -70,7 +70,7 @@ def walk_forward_validation(X, Y):
         # 1. Define the current training and testing windows
         X_train, Y_train = X.iloc[:i], Y.iloc[:i]
         X_test, Y_test = X.iloc[i:i+1], Y.iloc[i:i+1] # Test window is always the next single day
-        
+
         # 2. Regression Model (Price Prediction)
         reg_model = XGBRegressor(
             objective='reg:squarederror', 
@@ -106,6 +106,30 @@ def walk_forward_validation(X, Y):
 
         # Store the actual next day values
         actual_values.append(Y_test.iloc[0].to_dict())
+        # 3. Classification Model (Direction Prediction)
+        pos_count = Y_train[TARGET_DIRECTION].sum()
+        neg_count = len(Y_train) - pos_count
+        scale_pos_weight_val = neg_count / pos_count if pos_count > 0 else 1.0
+
+        cls_model = XGBClassifier(
+            objective='binary:logistic',
+            n_estimators=100, 
+            learning_rate=0.1, 
+            max_depth=5,
+            scale_pos_weight=scale_pos_weight_val, # ADDRESSES IMBALANCE
+            use_label_encoder=False, 
+            eval_metric='logloss',
+            random_state=42, 
+            n_jobs=-1
+        )
+        cls_model.fit(X_train, Y_train[TARGET_DIRECTION])
+        direction_pred = cls_model.predict(X_test)[0]
+        direction_predictions.append(direction_pred)
+
+        # Store the actual next day values
+        actual_values.append(Y_test.iloc[0].to_dict())
+
+
 
 
 
