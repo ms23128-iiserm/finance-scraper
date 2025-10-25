@@ -232,3 +232,23 @@ def save_advanced_model_results(Y_test_full, results_list):
     final_df.to_csv(ADVANCED_RESULTS_FILE)
     print(f"✅ All predictions consolidated and saved to '{ADVANCED_RESULTS_FILE}' for final summary.")
     
+def plot_results(results_list, title="Comparative Model Forecasting"):
+    """Plots the actual price vs. predictions from all models."""
+    plt.figure(figsize=(18, 8))
+    
+    actual_prices = results_list[0][0] 
+    plt.plot(actual_prices.index, actual_prices.values, label='Actual Reliance Price (Test Set)', color='black', linewidth=2)
+    
+    for actual, prediction, label in results_list:
+        plt.plot(prediction.index, prediction.values, label=f'Predicted Price ({label.replace("XGBoost", "XGB")})', linestyle='--', alpha=0.7)
+    
+    plt.title(title)
+    plt.xlabel('Date')
+    plt.ylabel('Closing Price (INR)')
+    plt.legend(loc='best')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig('comparative_model_forecast.png')
+    print("✅ Comparative model forecast plot saved to 'comparative_model_forecast.png'")
+
+
