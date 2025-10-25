@@ -254,3 +254,28 @@ def predict_recursive_xgboost(model, initial_data, feature_names, n_days=N_FUTUR
     print("✅ Recursive Forecast Complete.")
     return forecast_series
 
+# ==============================================================================
+# 5. DATA CONSOLIDATION AND PLOTTING
+# ==============================================================================
+
+def save_advanced_model_results(Y_test_full, results_list):
+    """Consolidates all model predictions and the actual target into a single DataFrame."""
+    final_df = pd.DataFrame({TARGET_PRICE: Y_test_full})
+    
+    for actual, prediction_series, label in results_list:
+        column_name = f'Predicted_{label.replace(" ", "")}'
+        final_df[column_name] = np.nan
+        final_df.loc[prediction_series.index, column_name] = prediction_series.values
+        
+    final_df.to_csv(ADVANCED_RESULTS_FILE)
+    print(f"\n✅ All predictions consolidated and saved to '{ADVANCED_RESULTS_FILE}'.")
+    
+def plot_results(results_list, title="Comparative Model Forecasting"):
+    """Plots the actual price vs. predictions from all models."""
+    plt.figure(figsize=(18, 8))
+    
+    actual_prices = results_list[0][0]
+    plt.plot(actual_prices.index, actual_prices.values, label='Actual Reliance Price (Test Set)', color='black', linewidth=2)
+    
+    for actual, prediction, label in results_list:
+        plt.plot(prediction.index, prediction.values, label=f'Predicted Price ({label})', linestyle='--', alpha=0.7)
