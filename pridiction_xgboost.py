@@ -338,3 +338,17 @@ def main():
         n_days=N_FUTURE_DAYS 
     )
     
+    print("\n" + "="*80)
+    print(f"    ✨ FINAL 15-DAY RECURSIVE FORECAST FOR RELIANCE (Using Optimized XGBoost) ✨")
+    print("="*80)
+    # Use the column name of the series for printing the final result
+    print(forecast_15_days.to_string(float_format='%.2f'))
+    print("\nNOTE: These prices assume the historical trend continues (Recursive Error Compounding).")
+    
+    print("\n✨ --- ADVANCED MODELING COMPLETE --- ✨")
+
+if __name__ == "__main__":
+    # Suppress TensorFlow verbose output
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    
+    main()
