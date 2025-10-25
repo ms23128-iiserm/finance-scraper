@@ -235,3 +235,22 @@ def predict_recursive_xgboost(model, initial_data, feature_names, n_days=N_FUTUR
         
         predicted_price = model.predict(X_predict)[0]
         
+        # 4. Update Context (Recurse)
+        # Create a new row to append to the historical context
+        new_price_row = pd.Series(
+            [predicted_price], 
+            index=[next_date], 
+            name='Reliance_Close'
+        ).to_frame(name='Reliance_Close')
+        
+        current_features = pd.concat([current_features, new_price_row])
+        
+        forecast_prices.append((next_date, predicted_price))
+
+    forecast_series = pd.Series([p for d, p in forecast_prices], 
+                                index=[d for d, p in forecast_prices],
+                                name='Predicted Price (15-Day Recursive)')
+    
+    print("✅ Recursive Forecast Complete.")
+    return forecast_series
+
