@@ -256,5 +256,5 @@ def main():
     
     print("\n✨ --- WFV & P&L Analysis Complete --- ✨")
 
-if __name__== "main":
+if __name__ == "main":
     main()
