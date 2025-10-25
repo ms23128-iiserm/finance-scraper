@@ -319,4 +319,36 @@ def main():
     save_advanced_model_results(Y_test, all_results)
     plot_results(all_results)
     
+ # ------------------------------------------------------------------
+    # --- 5. 15-DAY RECURSIVE FORECAST (New) ---
+    # ------------------------------------------------------------------
     
+    # FIX: Safely prepare initial_data by dropping TARGET_PRICE and 'direction' 
+    # using errors='ignore' so the base 'Reliance_Close' column remains intact for recursion.
+    initial_data_for_recursive = full_df.drop(
+        columns=[TARGET_PRICE, 'direction'], 
+        errors='ignore'
+    )
+    
+    forecast_15_days = predict_recursive_xgboost(
+        model=best_xgb_model,
+        initial_data=initial_data_for_recursive,
+        feature_names=feature_names,
+        n_days=N_FUTURE_DAYS 
+    )
+    
+    print("\n" + "="*80)
+    print(f"    ✨ FINAL 15-DAY RECURSIVE FORECAST FOR RELIANCE (Using Optimized XGBoost) ✨")
+    print("="*80)
+    # Use the column name of the series for printing the final result
+    print(forecast_15_days.to_string(float_format='%.2f'))
+    print("\nNOTE: These prices assume the historical trend continues (Recursive Error Compounding).")
+    
+    print("\n✨ --- ADVANCED MODELING COMPLETE --- ✨")
+
+if _name_ == "_main_":
+    # Suppress TensorFlow verbose output
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    
+    main()
+   
