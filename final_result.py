@@ -46,3 +46,33 @@ def load_and_split_data(filepath):
     print(f"✅ Data Split: Train size = {len(X_train)}, Test size = {len(X_test)}")
     return X_train, X_test, Y_train, Y_test, X.columns.tolist()
 
+# ==============================================================================
+# 1. LONG SHORT-TERM MEMORY (LSTM) MODEL
+# ==============================================================================
+
+def prepare_lstm_data(X_train, X_test, Y_train, Y_test, n_steps=N_STEPS):
+    """Scales and reshapes data into the 3D format required by LSTM."""
+    print(f"\n--- Preparing Data for LSTM (N_STEPS={n_steps}) ---")
+    
+    scaler_X = MinMaxScaler(feature_range=(0, 1))
+    X_train_scaled = scaler_X.fit_transform(X_train)
+    X_test_scaled = scaler_X.transform(X_test)
+
+    scaler_Y = MinMaxScaler(feature_range=(0, 1))
+    Y_train_scaled = scaler_Y.fit_transform(Y_train.values.reshape(-1, 1))
+    
+    def create_sequences(X, Y): 
+        Xs = []
+        for i in range(len(X) - n_steps):
+            Xs.append(X[i:i + n_steps])
+        Y_eval = Y.iloc[n_steps:]
+        return np.array(Xs), Y_eval
+
+    X_train_seq, _ = create_sequences(X_train_scaled, Y_train)
+    Y_train_seq = Y_train_scaled[N_STEPS:] 
+    
+    X_test_seq, Y_test_eval = create_sequences(X_test_scaled, Y_test)
+    
+    print(f"✅ LSTM Data Ready: X_train_seq shape: {X_train_seq.shape}")
+    return X_train_seq, Y_train_seq, X_test_seq, Y_test_eval, scaler_Y
+
