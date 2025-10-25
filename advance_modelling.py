@@ -251,4 +251,36 @@ def plot_results(results_list, title="Comparative Model Forecasting"):
     plt.savefig('comparative_model_forecast.png')
     print("✅ Comparative model forecast plot saved to 'comparative_model_forecast.png'")
 
+# ==============================================================================
+#                               MAIN EXECUTION
+# ==============================================================================
 
+def main():
+    X_train, X_test, Y_train, Y_test, feature_names = load_and_split_data(INPUT_FILE)
+    
+    all_results = []
+    
+    # --- 1. XGBoost Optimization ---
+    best_xgb_model = optimize_xgboost(X_train, Y_train, feature_names)
+    # CORRECTED TYPO HERE:
+    Y_test_xgb, predicted_xgb = evaluate_optimized_xgboost(best_xgb_model, X_test, Y_test)
+    all_results.append((Y_test_xgb, predicted_xgb, "OptimizedXGBoost"))
+
+    # --- 2. ARIMA Baseline ---
+    Y_test_arima, predicted_arima = train_and_evaluate_arima(Y_train, Y_test)
+    all_results.append((Y_test_arima, predicted_arima, "ARIMABaseline"))
+    
+    # --- 3. LSTM Deep Learning ---
+    X_train_lstm, Y_train_lstm, X_test_lstm, Y_test_lstm_eval, scaler_Y = prepare_lstm_data(X_train, X_test, Y_train, Y_test)
+    Y_test_lstm, predicted_lstm, _ = train_and_evaluate_lstm(X_train_lstm, Y_train_lstm, X_test_lstm, Y_test_lstm_eval, scaler_Y)
+    all_results.append((Y_test_lstm, predicted_lstm, "LSTMNetwork"))
+    
+    # --- 4. Data Consolidation and Plotting ---
+    save_advanced_model_results(Y_test, all_results) 
+    plot_results(all_results)
+    
+    print("\n✨ --- ADVANCED MODELING COMPLETE --- ✨")
+
+if __name__ == "__main__":
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    main()
