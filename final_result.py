@@ -76,3 +76,29 @@ def prepare_lstm_data(X_train, X_test, Y_train, Y_test, n_steps=N_STEPS):
     print(f"✅ LSTM Data Ready: X_train_seq shape: {X_train_seq.shape}")
     return X_train_seq, Y_train_seq, X_test_seq, Y_test_eval, scaler_Y
 
+def train_and_evaluate_lstm(X_train_seq, Y_train_seq, X_test_seq, Y_test_eval, scaler_Y):
+    """Builds, trains, and evaluates the LSTM model."""
+    
+    model = Sequential()
+    model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train_seq.shape[1], X_train_seq.shape[2])))
+    model.add(Dropout(0.2))
+    model.add(LSTM(units=50, return_sequences=False))
+    model.add(Dropout(0.2))
+    model.add(Dense(units=1))
+    
+    model.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
+    print("\n--- Training LSTM Model (50 Epochs) ---")
+    model.fit(X_train_seq, Y_train_seq, epochs=50, batch_size=32, verbose=0)
+    
+    predicted_scaled = model.predict(X_test_seq, verbose=0)
+    predicted_price = scaler_Y.inverse_transform(predicted_scaled).flatten()
+    
+    rmse = np.sqrt(mean_squared_error(Y_test_eval, predicted_price))
+    r2 = r2_score(Y_test_eval, predicted_price)
+    
+    print("--- LSTM Model Evaluation ---")
+    print(f"RMSE: {rmse:.2f}")
+    print(f"R-squared: {r2:.4f}")
+    
+    return Y_test_eval, predicted_price, model
+
