@@ -196,3 +196,17 @@ def optimize_xgboost(X_train, Y_train, feature_names):
     print(feature_importance.to_string())
     
     return best_model
+
+def evaluate_optimized_xgboost(model, X_test, Y_test):
+    """Evaluates the final optimized XGBoost model."""
+    predicted_price = model.predict(X_test)
+    
+    rmse = np.sqrt(mean_squared_error(Y_test, predicted_price))
+    r2 = r2_score(Y_test, predicted_price)
+    
+    print("\n--- Optimized XGBoost Model Evaluation ---")
+    print(f"RMSE: {rmse:.2f}")
+    print(f"R-squared: {r2:.4f}")
+    
+    return Y_test, pd.Series(predicted_price, index=Y_test.index)
+
