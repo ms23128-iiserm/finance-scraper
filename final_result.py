@@ -346,9 +346,8 @@ def main():
     
     print("\n✨ --- ADVANCED MODELING COMPLETE --- ✨")
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     # Suppress TensorFlow verbose output
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-    
-    main()
+main()
    
