@@ -154,3 +154,20 @@ def print_markdown_report(results, model_pnl, buy_and_hold_pnl):
     print(f"| Buy-and-Hold Baseline | ₹{buy_and_hold_pnl:,.2f} | Benchmark |")
     
     print("\n*(This section would be followed by your P&L plot: )*")
+    
+# ==============================================================================
+#                               MAIN EXECUTION
+# ==============================================================================
+
+if _name_== '_main_':
+    try:
+        final_results, model_pnl, buy_and_hold_pnl = compile_master_results(
+            pd.read_csv(WFV_RESULTS_FILE, parse_dates=True, index_col=0),
+            pd.read_csv(FEATURE_DATA_FILE, parse_dates=True, index_col=0)
+        )
+        print_markdown_report(final_results, model_pnl, buy_and_hold_pnl)
+    except FileNotFoundError as e:
+        print(f"\n❌ CRITICAL ERROR: Could not run report. Make sure all files exist:")
+        print(f"- {WFV_RESULTS_FILE}")
+        print(f"- {FEATURE_DATA_FILE}")
+        print(f"- {ADVANCED_RESULTS_FILE} (created by advance_modelling.py)")
