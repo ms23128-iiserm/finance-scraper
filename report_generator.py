@@ -159,7 +159,7 @@ def print_markdown_report(results, model_pnl, buy_and_hold_pnl):
 #                               MAIN EXECUTION
 # ==============================================================================
 
-if _name_== '_main_':
+if __name__ == '__main__':
     try:
         final_results, model_pnl, buy_and_hold_pnl = compile_master_results(
             pd.read_csv(WFV_RESULTS_FILE, parse_dates=True, index_col=0),
