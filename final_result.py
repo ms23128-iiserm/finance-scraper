@@ -129,3 +129,55 @@ def train_and_evaluate_arima(Y_train, Y_test):
     
     return Y_test, forecast.values
 
+# ==============================================================================
+# 3. XGBOOST OPTIMIZATION & EVALUATION
+# ==============================================================================
+
+def optimize_xgboost(X_train, Y_train, feature_names):
+    """Performs Hyperparameter Tuning for the XGBoost Regressor using GridSearchCV."""
+    print("\n--- Optimizing XGBoost Regressor (GridSearchCV) ---")
+    
+    tscv = TimeSeriesSplit(n_splits=3) 
+    
+    param_grid = {
+        'n_estimators': [100, 200],
+        'max_depth': [3, 5],
+        'learning_rate': [0.05, 0.1]
+    }
+
+    reg_model = XGBRegressor(objective='reg:squarederror', random_state=42, n_jobs=-1, use_label_encoder=False)
+    
+    grid_search = GridSearchCV(
+        estimator=reg_model, 
+        param_grid=param_grid, 
+        scoring='neg_mean_squared_error', 
+        cv=tscv, 
+        verbose=0,
+        n_jobs=-1
+    )
+    
+    grid_search.fit(X_train, Y_train)
+    
+    best_model = grid_search.best_estimator_
+    print(f"✅ XGBoost Optimization Complete. Best Params: {grid_search.best_params_}")
+    
+    print("\n--- XGBoost Feature Importance ---")
+    importance = best_model.feature_importances_
+    feature_importance = pd.Series(importance, index=feature_names).sort_values(ascending=False).head(10)
+    print(feature_importance.to_string())
+    
+    return best_model
+
+def evaluate_optimized_xgboost(model, X_test, Y_test):
+    """Evaluates the final optimized XGBoost model."""
+    predicted_price = model.predict(X_test)
+    
+    rmse = np.sqrt(mean_squared_error(Y_test, predicted_price))
+    r2 = r2_score(Y_test, predicted_price)
+    
+    print("\n--- Optimized XGBoost Model Evaluation ---")
+    print(f"RMSE: {rmse:.2f}")
+    print(f"R-squared: {r2:.4f}")
+    
+    return Y_test, predicted_price
+
