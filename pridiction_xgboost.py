@@ -102,3 +102,30 @@ def train_and_evaluate_lstm(X_train_seq, Y_train_seq, X_test_seq, Y_test_eval, s
     
     return Y_test_eval, predicted_price, model
 
+# ==============================================================================
+# 2. ARIMA BASELINE MODEL
+# ==============================================================================
+
+def train_and_evaluate_arima(Y_train, Y_test):
+    """Trains and evaluates the ARIMA model."""
+    print("\n--- Training ARIMA Baseline (p=5, d=1, q=0) ---")
+    
+    model = ARIMA(Y_train, order=(5, 1, 0))
+    model_fit = model.fit()
+    
+    start_index = len(Y_train)
+    end_index = len(Y_train) + len(Y_test) - 1
+    
+    forecast = model_fit.predict(start=start_index, end=end_index, dynamic=False)
+    
+    forecast.index = Y_test.index
+    
+    rmse = np.sqrt(mean_squared_error(Y_test, forecast))
+    r2 = r2_score(Y_test, forecast)
+    
+    print("--- ARIMA Model Evaluation ---")
+    print(f"RMSE: {rmse:.2f}")
+    print(f"R-squared: {r2:.4f}")
+    
+    return Y_test, forecast.values
+
