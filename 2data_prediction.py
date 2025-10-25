@@ -129,6 +129,31 @@ def walk_forward_validation(X, Y):
         # Store the actual next day values
         actual_values.append(Y_test.iloc[0].to_dict())
 
+Results) ---")
+    
+    # --- A. Regression Evaluation ---
+actual_price = results_df[TARGET_PRICE]
+pred_price = results_df['Predicted_Price']
+    
+    # Calculate R-squared and RMSE for the entire out-of-sample period
+rmse = np.sqrt(mean_squared_error(actual_price, pred_price))
+    
+    # Calculate R2 using the custom formula for time-series (1 - MSE/Variance of Test Data)
+ var_test = np.var(actual_price)
+ts_r2 = 1 - (mean_squared_error(actual_price, pred_price) / var_test)
+    
+    print("\n💰 Price Prediction (XGBoost Regressor):")
+    print(f"Walk-Forward Test RMSE: {rmse:.2f}")
+    print(f"Walk-Forward Test R-squared: {ts_r2:.4f}")
+    
+    # --- B. Classification Evaluation ---
+    actual_direction = results_df[TARGET_DIRECTION]
+    pred_direction = results_df['Predicted_Direction']
+
+    print("\n📈 Direction Prediction (XGBoost Classifier with scale_pos_weight):")
+    print(classification_report(actual_direction, pred_direction, target_names=['Down/Flat (0)', 'Up (1)']))
+    print(f"Confusion Matrix:\n{confusion_matrix(actual_direction, pred_direction)}")
+
 
 
 
