@@ -1,0 +1,80 @@
+import pandas as pd
+
+# --- Configuration ---
+# 1. The 15-day "price change" forecast you just generated
+forecast_deltas = [
+    7.88, 4.45, 4.31, 4.70, 2.41, 3.89, 1.73, 7.57, 
+    7.74, -2.59, 1.85, 1.79, -0.41, 3.30, 6.22
+]
+
+# 2. The date your forecast starts (the day after your data ends)
+# Your last data was Oct 24, 2025 (from the previous log), so it starts on Oct 25.
+# Your new log shows a start date of 2025-10-25, so your data must end on 2025-10-24.
+start_date = "2025-10-25"
+
+# 3. The file with your engineered data
+DATA_FILE = 'features_engineered_data.csv'
+# ---------------------
+
+def get_last_known_price(data_file):
+    """
+    Loads the data file and gets the very last "Reliance_Close" price.
+    """
+    try:
+        df = pd.read_csv(data_file, parse_dates=True, index_col=0)
+        
+        # 'Reliance_Close' is the *original* price, not the 'target' (which is the change)
+        last_price = df['Reliance_Close'].iloc[-1]
+        last_date = df.index[-1]
+        
+        print(f"--- Loaded Last Known Price ---")
+        print(f"Last Actual Date: {last_date.strftime('%Y-%m-%d')}")
+        print(f"Last Actual Price: {last_price:.2f} (INR)")
+        print("-" * 30)
+        return last_price
+        
+    except FileNotFoundError:
+        print(f"❌ ERROR: Cannot find file '{data_file}'")
+        return None
+    except Exception as e:
+        print(f"❌ ERROR: Could not read file. Is 'Reliance_Close' column present? {e}")
+        return None
+
+def apply_forecast(last_price, deltas, start_date):
+    """
+    Applies the forecasted changes (deltas) to the last known price
+    to create a final absolute price forecast.
+    """
+    print("\n--- Generating Final Absolute Price Forecast ---")
+    
+    # Create the 15-day date range for our forecast
+    forecast_dates = pd.date_range(start=start_date, periods=len(deltas))
+    
+    prices = []
+    current_price = last_price
+    
+    for day, change in enumerate(deltas):
+        # Add the predicted change to the current price
+        current_price += change
+        prices.append(current_price)
+        
+    # Create a final, clean pandas Series
+    final_forecast = pd.Series(prices, index=forecast_dates, name="Forecasted_Price")
+    final_forecast.index.name = "Date"
+    
+    return final_forecast
+
+def main():
+    last_price = get_last_known_price(DATA_FILE)
+    
+    if last_price is not None:
+        final_forecast = apply_forecast(last_price, forecast_deltas, start_date)
+        
+        print("\n" + "="*60)
+        print("    ✨ FINAL 15-DAY RELIANCE PRICE FORECAST ✨")
+        print(" (Last Actual Price + Predicted Daily Changes)")
+        print("="*60)
+        print(final_forecast.to_string(float_format='%.2f'))
+
+if __name__ == "__main__":
+    main()

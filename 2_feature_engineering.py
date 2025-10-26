@@ -27,16 +27,14 @@ def load_data(filepath):
         return None
 
 def create_target_variable(df, target_col):
-    """
-    Creates the 'target' column (next day's closing price).
-    """
-    print(f"--- Engineering Target Variable ('{target_col}') ---")
-    # df['target'] for today will be df[target_col] for tomorrow.
-    df['target'] = df[target_col].shift(-1)
-    
-    # Drop the very last row, as it has no target
-    df = df.iloc[:-1]
-    print("✅ 'target' column created (tomorrow's price).")
+    print(f"--- Engineering Target Variable (Price Difference) ---")
+
+    # target = Price(Tomorrow) - Price(Today)
+    df['target'] = df[target_col].shift(-1) - df[target_col]
+
+    df = df.iloc[:-1] # Drop last row
+    df = df.dropna() # Drop any new NaNs
+    print("✅ 'target' column created (Tomorrow's Price - Today's Price).")
     return df
 
 def create_lag_features(df, columns, lags=[1, 3, 7, 14]):
