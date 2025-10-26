@@ -140,5 +140,5 @@ def main():
     print(final_forecast_series.to_string(float_format='%.2f'))
     print("\n✨ --- FORECAST COMPLETE --- ✨")
 
-if _name_ == "_main_":
-    main()
+if __name__ == "__main__":
+    main()
