@@ -64,3 +64,12 @@ def prepare_multi_output_lstm_data(X_train, X_test, Y_train, Y_test, n_steps=N_S
     Y_test_eval = np.array(Y_test_eval)
 
     return X_train_seq, Y_train_seq, X_test_seq, Y_test_eval, scaler_Y, Y_full.index[-1]
+def build_multi_output_lstm(input_shape, future_steps):
+    model = Sequential()
+    model.add(LSTM(64, return_sequences=True, input_shape=input_shape))
+    model.add(Dropout(0.2))
+    model.add(LSTM(64, return_sequences=False))
+    model.add(Dropout(0.2))
+    model.add(Dense(future_steps))
+    model.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
+    return model
