@@ -18,3 +18,17 @@ TRAIN_SPLIT_RATIO = 0.8
 N_STEPS = 60         # Time steps (past days) for LSTM input
 N_FUTURE_DAYS = 15   # Constant for the forecast horizon
 # ---------------------
+def load_and_split_data(filepath):
+    """Loads and splits data chronologically."""
+    print(f"\n--- Loading Data from '{filepath}' ---")
+    df = pd.read_csv(filepath, parse_dates=True, index_col=0).dropna()
+    
+    X = df.drop(columns=[TARGET_PRICE, 'direction'], errors='ignore').select_dtypes(include=np.number)
+    Y = df[TARGET_PRICE]
+    
+    train_size = int(len(df) * TRAIN_SPLIT_RATIO)
+    X_train, X_test = X.iloc[:train_size], X.iloc[train_size:]
+    Y_train, Y_test = Y.iloc[:train_size], Y.iloc[train_size:]
+    
+    print(f"✅ Train size = {len(X_train)}, Test size = {len(X_test)}")
+    return X_train, X_test, Y_train, Y_test
