@@ -52,3 +52,7 @@ def prepare_multi_output_lstm_data(X_train, X_test, Y_train, Y_test, n_steps=N_S
         return np.array(Xs), np.array(Ys)
 
     X_seq_all, Y_seq_all = create_multi_sequences(X_all_scaled, Y_full_scaled)
+    train_end_index = len(X_train) - n_steps - future_steps + 1
+    X_train_seq = X_seq_all[:train_end_index]
+    Y_train_seq = Y_seq_all[:train_end_index]
+    X_test_seq = X_seq_all[train_end_index:]
