@@ -85,3 +85,10 @@ def train_and_evaluate_multi_output_lstm(X_train_seq, Y_train_seq, X_test_seq, Y
 
     print(f"RMSE: {rmse:.2f}")
     print(f"R²: {r2:.4f}")
+    X_final = X_test_seq[-1].reshape(1, X_test_seq.shape[1], X_test_seq.shape[2])
+    forecast_scaled = model.predict(X_final, verbose=0).flatten()
+    forecast_prices = scaler_Y.inverse_transform(forecast_scaled.reshape(-1, 1)).flatten()
+
+    forecast_dates = pd.date_range(start=last_known_date, periods=N_FUTURE_DAYS + 1, inclusive='neither')
+    final_forecast = pd.Series(forecast_prices, index=forecast_dates, name="LSTM_Forecast")
+    return final_forecast
