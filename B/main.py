@@ -17,11 +17,11 @@ DATABASE_FILE = "market_data.db"
 # --------------------------------
 
 # --- Import all your specific scraping functions ---
-from scraper_reliance import scrape_reliance_data
-from scraper_gold import scrape_gold_data
+from A.scraper_reliance import scrape_reliance_data
+from A.scraper_gold import scrape_gold_data
 from scraper_petrol import scrape_petrol_data
-from scraper_forex import scrape_forex
-from scraper_news import scrape_news_data
+from A.scraper_forex import scrape_forex
+from A.scraper_news import scrape_news_data
 
 
 # PASTED THIS corrected function into
