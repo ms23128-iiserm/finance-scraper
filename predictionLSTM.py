@@ -43,3 +43,12 @@ def prepare_multi_output_lstm_data(X_train, X_test, Y_train, Y_test, n_steps=N_S
     Y_full = pd.concat([Y_train, Y_test])
     scaler_Y = MinMaxScaler(feature_range=(0, 1))
     Y_full_scaled = scaler_Y.fit_transform(Y_full.values.reshape(-1, 1))
+    def create_multi_sequences(X_scaled, Y_scaled_full):
+        Xs, Ys = [], []
+        stop_index = len(X_scaled) - n_steps - future_steps + 1
+        for i in range(stop_index):
+            Xs.append(X_scaled[i:i+n_steps])
+            Ys.append(Y_scaled_full[i+n_steps:i+n_steps+future_steps].flatten())
+        return np.array(Xs), np.array(Ys)
+
+    X_seq_all, Y_seq_all = create_multi_sequences(X_all_scaled, Y_full_scaled)
