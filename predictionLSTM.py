@@ -92,3 +92,15 @@ def train_and_evaluate_multi_output_lstm(X_train_seq, Y_train_seq, X_test_seq, Y
     forecast_dates = pd.date_range(start=last_known_date, periods=N_FUTURE_DAYS + 1, inclusive='neither')
     final_forecast = pd.Series(forecast_prices, index=forecast_dates, name="LSTM_Forecast")
     return final_forecast
+def main():
+    X_train, X_test, Y_train, Y_test = load_and_split_data(INPUT_FILE)
+    X_train_seq, Y_train_seq, X_test_seq, Y_test_eval, scaler_Y, last_date = prepare_multi_output_lstm_data(
+        X_train, X_test, Y_train, Y_test
+    )
+    forecast = train_and_evaluate_multi_output_lstm(X_train_seq, Y_train_seq, X_test_seq, Y_test_eval, scaler_Y, last_date)
+
+    print("\nFinal 15-Day Forecast:")
+    print(forecast.to_string(float_format='%.2f'))
+
+if __name__ == "__main__":
+    main()
