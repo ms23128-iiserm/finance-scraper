@@ -56,3 +56,11 @@ def prepare_multi_output_lstm_data(X_train, X_test, Y_train, Y_test, n_steps=N_S
     X_train_seq = X_seq_all[:train_end_index]
     Y_train_seq = Y_seq_all[:train_end_index]
     X_test_seq = X_seq_all[train_end_index:]
+    Y_full_unscaled = pd.concat([Y_train, Y_test])
+    Y_test_eval = []
+    start_index = len(Y_train) - n_steps + 1
+    for i in range(len(X_test_seq)):
+        Y_test_eval.append(Y_full_unscaled.iloc[start_index + i : start_index + i + future_steps].values)
+    Y_test_eval = np.array(Y_test_eval)
+
+    return X_train_seq, Y_train_seq, X_test_seq, Y_test_eval, scaler_Y, Y_full.index[-1]
