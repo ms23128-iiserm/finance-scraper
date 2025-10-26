@@ -73,3 +73,15 @@ ef build_multi_output_lstm(input_shape, future_steps):
     model.add(Dense(future_steps))
     model.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
     return model
+def train_and_evaluate_multi_output_lstm(X_train_seq, Y_train_seq, X_test_seq, Y_test_eval, scaler_Y, last_known_date):
+    model = build_multi_output_lstm((X_train_seq.shape[1], X_train_seq.shape[2]), Y_train_seq.shape[1])
+    model.fit(X_train_seq, Y_train_seq, epochs=75, batch_size=32, verbose=0)
+
+    predicted_scaled = model.predict(X_test_seq, verbose=0)
+    predicted_prices = scaler_Y.inverse_transform(predicted_scaled)
+
+    rmse = np.sqrt(mean_squared_error(Y_test_eval.flatten(), predicted_prices.flatten()))
+    r2 = r2_score(Y_test_eval.flatten(), predicted_prices.flatten())
+
+    print(f"RMSE: {rmse:.2f}")
+    print(f"R²: {r2:.4f}")
